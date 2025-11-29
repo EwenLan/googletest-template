@@ -44,6 +44,9 @@ endif()
 # 先设置glog查找路径，增加找到的概率
 set(glog_DIR "" CACHE PATH "Path to glog installation directory")
 
+# 确保include目录被添加，以便能找到log_config.h
+include_directories("${PROJECT_SOURCE_DIR}/include")
+
 # 尝试查找glog
 find_package(glog 0.6.0 REQUIRED QUIET)
 
@@ -77,8 +80,9 @@ else()
     ")
 endif()
 
-# 添加源代码
+# 添加源代码（排除main.cpp，因为它会单独编译为可执行文件）
 file(GLOB SOURCES "${PROJECT_SOURCE_DIR}/src/*.cpp")
+list(REMOVE_ITEM SOURCES "${PROJECT_SOURCE_DIR}/src/main.cpp")
 
 # 创建主库
 add_library(${PROJECT_NAME}_lib STATIC ${SOURCES})

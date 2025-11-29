@@ -1,38 +1,12 @@
 #include <calculator.h>
 #include <glog/logging.h>
-
-// 平台特定的头文件和定义
-#if defined(_WIN32) || defined(_WIN64)
-#include <direct.h>
-#define mkdir(path, mode) _mkdir(path)
-#define LOG_DIR ".\\logs\\"
-#define LOG_DIR_CREATE ".\\logs"
-#else
-#include <sys/stat.h>
-#define LOG_DIR "./logs/"
-#define LOG_DIR_CREATE "./logs"
-#endif
+#include <log_config.h>
 
 int main(int argc, char *argv[]) {
-  // 初始化glog，传入程序名作为参数
-  google::InitGoogleLogging(argv[0]);
+  // 使用RAII模式初始化日志系统
+  // 当main函数结束时，logConfig对象会自动析构，关闭日志系统
+  LogConfig logConfig(argv[0]);
 
-  // 在程序退出时自动清理glog资源
-  google::InstallFailureSignalHandler();
-
-  // 创建logs目录（如果不存在）
-  mkdir(LOG_DIR_CREATE, 0755);
-
-  // 配置glog将日志输出到文件
-  // 设置日志文件前缀 - 使用平台兼容的路径
-  google::SetLogDestination(google::INFO, LOG_DIR);
-  // 设置日志文件最大大小（以MB为单位）
-  FLAGS_max_log_size = 10; // 10MB
-  // 立即输出日志
-  FLAGS_logbuflevel = 0;
-  // 将日志同时输出到标准输出以便查看
-  FLAGS_logtostderr = false;
-  FLAGS_alsologtostderr = true;
   LOG(INFO) << "Starting calculator application";
 
   Calculator calc;
@@ -54,6 +28,15 @@ int main(int argc, char *argv[]) {
             << " (in a real application, this should return an error)";
 
   LOG(INFO) << "Calculator application finished";
+
+  // 日志测试
+  LOG(INFO) << "This is a line of log in info level";
+  LOG(WARNING) << "This is a line of log in warning level";
+  LOG(ERROR) << "This is a line of log in error level";
+  // 注释掉FATAL级别日志，因为它会导致程序崩溃
+  // LOG(FATAL) << "This is a line of log in fatal level";
+
+  // 不需要显式关闭日志系统，RAII模式会在logConfig对象析构时自动关闭
 
   return 0;
 }
