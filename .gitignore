@@ -39,3 +39,40 @@
 
 # debug information files
 *.dwo
+
+# Build directories
+build/
+build-*/
+
+# Logs directory
+logs/
+
+# IDE and editor directories and files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# CMake specific files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+CTestTestfile.cmake
+compile_commands.json
+
+# Package manager files
+.vcpkg/
+conan.lock
+conanbuildinfo.cmake
+
+# Cache files
+.cache/
+.vs/
+
+# Environment files
+.env
+.env.local
+.env.*.local
