@@ -32,33 +32,88 @@
 ## 依赖项
 
 - **CMake 3.14+**: 构建系统
-- **Glog**: Google日志库
+- **Glog**: Google日志库（必需）
 - **C++编译器**: 支持C++17的编译器（GCC 7+, Clang 5+, MSVC 2019+）
 - **Google Test**: 自动通过CMake FetchContent下载，无需手动安装
 
 ## 构建步骤
 
-1. 确保已安装所有依赖项
+### 1. 安装依赖项
 
-   ```bash
-   # 在Ubuntu/Debian上
-   sudo apt-get install cmake libgoogle-glog-dev
-   
-   # 在macOS上（使用Homebrew）
-   brew install cmake glog
-   ```
+#### 在Ubuntu/Debian系统上
+```bash
+# 更新包管理器
+sudo apt-get update
 
-2. 进入构建目录
+# 安装基本构建工具
+sudo apt-get install -y build-essential cmake
 
-   ```bash
-   cd build
-   ```
+# 安装glog日志库
+sudo apt-get install -y libgoogle-glog-dev
+```
 
-3. 配置项目
+#### 在CentOS/RHEL系统上
+```bash
+# 安装EPEL仓库（提供glog包）
+sudo yum install -y epel-release
 
-   ```bash
-   cmake ..
-   ```
+# 安装构建工具和依赖
+sudo yum install -y gcc-c++ cmake glog-devel
+```
+
+#### 在macOS系统上（使用Homebrew）
+```bash
+# 安装依赖
+brew install cmake glog
+```
+
+#### 从源码构建glog（所有平台通用）
+如果通过包管理器安装遇到问题，或者需要特定版本的glog，可以从源码构建：
+```bash
+# 克隆glog仓库
+git clone https://github.com/google/glog.git
+cd glog
+
+# 配置并构建
+mkdir build && cd build
+cmake .. -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/usr/local
+make -j$(nproc)
+sudo make install
+
+# 更新库缓存
+if [ -f /etc/ld.so.conf.d ]; then
+    sudo ldconfig
+fi
+cd ../..
+rm -rf glog  # 可选：清理临时文件
+```
+
+### 2. 使用自动构建脚本
+
+项目提供了自动化构建脚本，可以自动检查依赖并构建项目：
+
+```bash
+# 确保脚本有执行权限
+chmod +x build.sh
+
+# 运行构建脚本
+./build.sh
+```
+
+### 3. 手动构建步骤
+
+如果需要自定义构建选项，可以使用手动构建步骤：
+
+```bash
+# 进入构建目录
+mkdir -p build && cd build
+
+# 基本配置
+cmake ..
+
+# 如果glog安装在非标准路径，可以指定其位置
+# cmake .. -Dglog_DIR=/path/to/glog/share/cmake/glog
+```
 
 4. 编译项目
 
@@ -114,7 +169,38 @@ cmake -DCMAKE_BUILD_TYPE=Debug ..
 
 # 启用详细日志
 cmake -DCMAKE_VERBOSE_MAKEFILE=ON ..
+
+# 指定glog的安装路径（如果安装在非标准位置）
+cmake -Dglog_DIR=/path/to/glog/share/cmake/glog ..
 ```
+
+## Linux系统下的常见问题
+
+### 找不到glog库
+
+如果CMake报错找不到glog库，请尝试以下解决方案：
+
+1. 确认glog已正确安装
+   ```bash
+   dpkg -l | grep libgoogle-glog-dev  # Ubuntu/Debian
+   rpm -qa | grep glog               # CentOS/RHEL
+   ```
+
+2. 从源码重新构建glog，确保安装到系统路径
+
+3. 使用-Dglog_DIR选项指定glog的安装位置
+
+4. 检查系统架构是否匹配（32位/64位）
+
+### 链接错误
+
+如果遇到glog相关的链接错误，可能是因为：
+
+1. glog库版本不兼容（建议使用0.6.0或更高版本）
+2. 混合使用静态库和动态库
+3. 库搜索路径未正确配置
+
+尝试从源码构建glog并使用-DBUILD_SHARED_LIBS=ON选项启用动态库构建。
 
 ## 许可证
 

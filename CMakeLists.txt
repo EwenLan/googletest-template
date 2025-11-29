@@ -40,16 +40,41 @@ else()
     message(STATUS "On macOS: brew install googletest")
 endif()
 
-# 查找glog库 - 现在作为必需依赖
-# 平台特定的glog查找配置
-if(WIN32)
-    # Windows平台下的glog查找
-    find_package(glog REQUIRED)
-    message(STATUS "Found glog on Windows: ${glog_VERSION}")
+# 查找glog库 - 必需依赖
+# 先设置glog查找路径，增加找到的概率
+set(glog_DIR "" CACHE PATH "Path to glog installation directory")
+
+# 尝试查找glog
+find_package(glog 0.6.0 REQUIRED QUIET)
+
+if(glog_FOUND)
+    message(STATUS "Found glog: ${glog_VERSION} (${glog_DIR})")
 else()
-    # Linux/macOS平台下的glog查找
-    find_package(glog REQUIRED)
-    message(STATUS "Found glog on Unix-like: ${glog_VERSION}")
+    # 提供详细的安装指南
+    message(FATAL_ERROR "
+    glog library not found! Please install it before continuing.
+    
+    On Ubuntu/Debian:
+        sudo apt-get update
+        sudo apt-get install -y libgoogle-glog-dev
+    
+    On CentOS/RHEL:
+        sudo yum install -y glog-devel
+    
+    On macOS:
+        brew install glog
+    
+    If installed in a custom location, set the glog_DIR variable:
+        cmake -Dglog_DIR=/path/to/glog/share/cmake/glog ..
+    
+    Alternatively, you can build glog from source:
+        git clone https://github.com/google/glog.git
+        cd glog
+        mkdir build && cd build
+        cmake ..
+        make -j4
+        sudo make install
+    ")
 endif()
 
 # 添加源代码
